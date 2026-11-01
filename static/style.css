@@ -1,0 +1,181 @@
+/* Krāsas: tikai #rrggbb. Tās pašas, kas client/main.py. Izmēri: tikai px. */
+
+:root {
+  --bg: #0c1117;
+  --panel: #141b24;
+  --edge: #27313e;
+  --text: #ebf1f5;
+  --muted: #8594a4;
+  --mint: #63e1b2;
+  --amber: #f6c168;
+  --highlight: #2f2f2c;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+a {
+  color: var(--mint);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* ---------- Galvene un kājene ---------- */
+
+.site-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 32px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--edge);
+}
+
+.brand {
+  color: var(--text);
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.brand span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+nav a {
+  margin-left: 20px;
+}
+
+.site-footer {
+  padding: 24px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+}
+
+/* ---------- Saturs ---------- */
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 20px 64px;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 32px;
+  line-height: 40px;
+}
+
+h2 {
+  margin-top: 32px;
+  color: var(--amber);
+  font-size: 18px;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* ---------- Tabulas ---------- */
+
+table {
+  width: 100%;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  border-collapse: collapse;
+  background: var(--panel);
+  overflow: hidden;
+}
+
+th,
+td {
+  padding: 10px 14px;
+  text-align: left;
+}
+
+th {
+  color: var(--muted);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+tbody tr {
+  border-top: 1px solid var(--edge);
+}
+
+/* 1. vieta ir izcelta. */
+tbody tr:first-child {
+  background: var(--highlight);
+}
+
+tbody tr:first-child td:first-child,
+tbody tr:first-child .score {
+  color: var(--amber);
+  font-weight: 700;
+}
+
+.score {
+  color: var(--mint);
+  font-weight: 700;
+}
+
+/* ---------- Kartītes ---------- */
+
+.card {
+  padding: 16px 20px;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.stats {
+  display: flex;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.stats .card {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+}
+
+.label {
+  color: var(--muted);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.value {
+  color: var(--mint);
+  font-size: 32px;
+  font-weight: 800;
+}
+
+/* ---------- Šaurs ekrāns ---------- */
+
+@media (max-width: 520px) {
+  .site-header {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .stats {
+    flex-direction: column;
+  }
+}

@@ -1,29 +1,13 @@
-# Game engine
-
+# Game client and API client
 pygame>=2.5.0
-
-
-
-# Backend & Server
-
-fastapi>=0.100.0
-
-uvicorn[standard]>=0.22.0
-
-pydantic>=2.0.0
-
-jinja2>=3.1.2
-
-
-
-# HTTP Client for Game-Server communication
-
 requests>=2.31.0
 
+# API server
+fastapi>=0.108.0
+jinja2>=3.1.2
+pydantic>=2.0.0
+uvicorn[standard]>=0.22.0
 
-
-# Code Quality & Testing
-
+# Development and tests
 pylint>=3.0.0
-
 pytest>=7.4.0

@@ -1,6 +1,9 @@
 """Spēles loģika: čūska, ābols, tumšās zonas un gaismas impulss."""
 
 import random
+from typing import NamedTuple
+
+Cell = tuple[int, int]
 
 # Virzieni kā pāri (x, y).
 UP = (0, -1)
@@ -11,20 +14,36 @@ RIGHT = (1, 0)
 START_LENGTH = 2  # Sākuma garums.
 MIN_LENGTH = 1  # Mazākais iespējamais garums.
 MIN_SCORE = 0  # Mazākais iespējamais punktu skaits.
-ZONE_INTERVAL = 7.0  # Cik sekundes starp tumšo zonu maiņām.
 ZONE_FADE_TIME = 0.45  # Cik ilgi zona pāriet no vienas vietas uz otru.
-DARK_DRAIN = 1.5  # Cik ātri tumsa noņem punktus un garumu (vienības sekundē).
 LIGHT_COST = 3  # Cik punktus un garumu maksā gaismas impulss.
 LIGHT_TIME = 4.0  # Cik ilgi gaisma deg.
 LIGHT_RADIUS = 3  # Gaismas rādiuss šūnās.
+LEVEL_BANNER_TIME = 1.8  # Cik ilgi redzams uzraksts par jaunu līmeni.
 
 
-def add(a, b):
+class Level(NamedTuple):
+    """Viena līmeņa grūtības iestatījumi."""
+
+    apples: int  # Cik ābolu kopā jāapēd, lai līmenis sāktos.
+    step_time: float  # Sekundes starp čūskas soļiem (mazāk = ātrāk).
+    zone_interval: float  # Cik sekundes starp tumšo zonu maiņām.
+    dark_drain: float  # Cik ātri tumsa noņem punktus un garumu (vienības/s).
+
+
+# Katrā līmenī čūska ir ātrāka, zonas mainās biežāk un tumsa kož stiprāk.
+LEVELS = (
+    Level(apples=0, step_time=0.135, zone_interval=7.0, dark_drain=1.5),
+    Level(apples=6, step_time=0.115, zone_interval=6.0, dark_drain=2.0),
+    Level(apples=14, step_time=0.095, zone_interval=5.0, dark_drain=2.5),
+)
+
+
+def add(a: Cell, b: Cell) -> Cell:
     """Saskaita divus pārus."""
     return (a[0] + b[0], a[1] + b[1])
 
 
-def is_opposite(a, b):
+def is_opposite(a: Cell, b: Cell) -> bool:
     """Vai virzieni a un b ir pretēji."""
     return add(a, b) == (0, 0)
 
@@ -32,17 +51,17 @@ def is_opposite(a, b):
 class Effect:
     """Nogrieztā astes posma animācija."""
 
-    def __init__(self, cell, delay):
+    def __init__(self, cell: Cell, delay: float) -> None:
         self.cell = cell
         self.age = 0.0
         self.delay = delay
         self.duration = 0.24
 
-    def progress(self):
+    def progress(self) -> float:
         """Animācijas progress no 0 līdz 1."""
         return max(0.0, min(1.0, (self.age - self.delay) / self.duration))
 
-    def is_done(self):
+    def is_done(self) -> bool:
         """Vai animācija beigusies."""
         return self.age >= self.delay + self.duration
 
@@ -50,56 +69,90 @@ class Effect:
 class Game:
     """Glabā spēles stāvokli."""
 
-    def __init__(self, width=34, height=20):
+    def __init__(self, width: int = 34, height: int = 20) -> None:
         if width < 5 or height < 5:
             raise ValueError("Laukumam jābūt vismaz 5 x 5 šūnas lielam.")
         self.width = width
         self.height = height
         self.reset()
 
-    def reset(self):
+    def reset(self) -> None:
         """Sāk spēli no jauna."""
         x, y = self.width // 2, self.height // 2
-        self.snake = [(x - i, y) for i in range(START_LENGTH)]  # Galva ir pirmais elements.
+        # Galva ir pirmais elements.
+        self.snake: list[Cell] = [(x - i, y) for i in range(START_LENGTH)]
         self.score = 0
+        self.apples_eaten = 0  # Līmeni nosaka ābolu skaits, nevis punkti.
+        self.banner_timer = 0.0  # Cik ilgi vēl rāda "LEVEL n".
         self.direction = RIGHT
-        self.queue = []  # Nākamie pagriezieni.
-        self.effects = []
+        self.queue: list[Cell] = []  # Nākamie pagriezieni.
+        self.effects: list[Effect] = []
         self.game_over = False
         self.game_won = False
+        self.paused = False
         self.zone_timer = 0.0
         self.fade_timer = 0.0
         self.dark_acc = 0.0  # Uzkrātā tumsas "rēķina" daļa.
         self.light_on = False
         self.light_timer = 0.0
-        self.dark_zones = set()
-        self.old_dark_zones = set()
-        self.apple = (-1, -1)
+        self.dark_zones: set[Cell] = set()
+        self.old_dark_zones: set[Cell] = set()
+        self.apple: Cell = (-1, -1)
         self.spawn_apple()
         self.make_dark_zones(animate=False)
 
-    def is_finished(self):
+    def is_finished(self) -> bool:
         """Vai spēle beigusies (zaudējums vai uzvara)."""
         return self.game_over or self.game_won
 
-    def fade_progress(self):
+    @property
+    def level(self) -> int:
+        """Pašreizējais līmenis (no 1)."""
+        return max(i for i, level in enumerate(LEVELS, 1)
+                   if self.apples_eaten >= level.apples)
+
+    @property
+    def config(self) -> Level:
+        """Pašreizējā līmeņa iestatījumi."""
+        return LEVELS[self.level - 1]
+
+    def apples_to_next(self) -> int | None:
+        """Cik ābolu līdz nākamajam līmenim (None, ja līmenis pēdējais)."""
+        if self.level >= len(LEVELS):
+            return None
+        return LEVELS[self.level].apples - self.apples_eaten
+
+    def toggle_pause(self) -> None:
+        """Ieslēdz vai izslēdz pauzi (beigušai spēlei pauzes nav)."""
+        if not self.is_finished():
+            self.paused = not self.paused
+
+    def fade_progress(self) -> float:
         """Cik tālu pāreja starp zonām ir (0 līdz 1)."""
         if self.fade_timer <= 0:
             return 1.0
         return 1.0 - self.fade_timer / ZONE_FADE_TIME
 
-    def make_dark_zones(self, animate=True):
-        """Izveido jaunas tumšās zonas. Ābols vienmēr paliek gaišā vietā."""
-        zones = set()
+    def make_dark_zones(self, animate: bool = True) -> None:
+        """Izveido jaunas tumšās zonas.
+
+        Ābols vienmēr paliek gaišā vietā. Spēles sākumā gaišas paliek
+        arī čūskas šūnas, lai tā nesāktu tumsā.
+        """
+        keep_clear = {self.apple}
+        if not animate:
+            keep_clear.update(self.snake)
+        zones: set[Cell] = set()
         target = int(self.width * self.height * random.uniform(0.14, 0.18))
         for _ in range(random.randint(4, 6)):
             # Katrs aplis ir viena tumša "sala".
-            cx, cy = random.randrange(self.width), random.randrange(self.height)
+            cx = random.randrange(self.width)
+            cy = random.randrange(self.height)
             rx, ry = random.randint(2, 4), random.randint(2, 4)
             for x in range(max(0, cx - rx), min(self.width, cx + rx + 1)):
                 for y in range(max(0, cy - ry), min(self.height, cy + ry + 1)):
                     inside = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 <= 1
-                    if inside and (x, y) != self.apple:
+                    if inside and (x, y) not in keep_clear:
                         zones.add((x, y))
             if len(zones) >= target:
                 break
@@ -108,7 +161,7 @@ class Game:
         self.dark_zones = zones
         self.fade_timer = ZONE_FADE_TIME if animate else 0.0
 
-    def spawn_apple(self):
+    def spawn_apple(self) -> None:
         """Novieto ābolu brīvā vietā, ja iespējams — gaišā."""
         free = [
             (x, y)
@@ -123,25 +176,26 @@ class Game:
             self.apple = (-1, -1)
             self.game_won = True
 
-    def turn(self, new_dir):
+    def turn(self, new_dir: Cell) -> None:
         """Pieņem jaunu virzienu, ja tas ir derīgs."""
-        if self.is_finished() or len(self.queue) >= 2:
+        if self.is_finished() or self.paused or len(self.queue) >= 2:
             return
         last = self.queue[-1] if self.queue else self.direction
         if new_dir != last and not is_opposite(new_dir, last):
             self.queue.append(new_dir)
 
-    def lose(self, amount):
+    def lose(self, amount: int) -> None:
         """Atņem punktus un garumu, bet ne zem minimuma."""
         self.score = max(MIN_SCORE, self.score - amount)
         cuts = min(amount, len(self.snake) - MIN_LENGTH)
         for _ in range(cuts):
             tail = self.snake.pop()
-            self.effects.append(Effect(tail, delay=len(self.effects) * 0.075))
+            delay = len(self.effects) * 0.075
+            self.effects.append(Effect(tail, delay=delay))
 
-    def light_pulse(self):
-        """Ieslēdz gaismu, ja pēc maksas čūska paliek vismaz minimālā garumā."""
-        if self.is_finished() or self.light_on:
+    def light_pulse(self) -> None:
+        """Ieslēdz gaismu, ja pēc maksas čūska paliek vismaz minimālā."""
+        if self.is_finished() or self.paused or self.light_on:
             return
         if len(self.snake) - LIGHT_COST < MIN_LENGTH:
             return
@@ -149,7 +203,7 @@ class Game:
         self.light_on = True
         self.light_timer = LIGHT_TIME
 
-    def is_lit(self, cell):
+    def is_lit(self, cell: Cell) -> bool:
         """Vai šūna ir gaismas rādiusā ap galvu."""
         if not self.light_on:
             return False
@@ -157,23 +211,26 @@ class Game:
         x, y = cell
         return (x - hx) ** 2 + (y - hy) ** 2 <= LIGHT_RADIUS ** 2
 
-    def update(self, dt):
-        """Atjauno taimerus un, ja čūska tumsā, noņem punktus un garumu."""
+    def update(self, dt: float) -> None:
+        """Atjauno taimerus; ja čūska tumsā, noņem punktus un garumu."""
+        if self.paused:
+            return
         dt = max(0.0, dt)
+        self.banner_timer = max(0.0, self.banner_timer - dt)
         self.update_effects(dt)
         self.update_zones(dt)
         if self.is_finished():
             return
-        self.update_dark(dt)  # Tumsa jāskaita pirms gaismas laika samazināšanas.
+        self.update_dark(dt)  # Tumsa jāskaita pirms gaismas samazināšanas.
         self.update_light(dt)
 
-    def update_effects(self, dt):
+    def update_effects(self, dt: float) -> None:
         """Virza nogriezto astes posmu animācijas."""
         for effect in self.effects:
             effect.age += dt
         self.effects = [e for e in self.effects if not e.is_done()]
 
-    def update_zones(self, dt):
+    def update_zones(self, dt: float) -> None:
         """Pārslēdz tumšās zonas laikā un noņem veco pārejas zonu."""
         self.fade_timer = max(0.0, self.fade_timer - dt)
         if self.fade_timer == 0:
@@ -181,17 +238,18 @@ class Game:
         if self.is_finished():
             return
         self.zone_timer += dt
-        if self.zone_timer >= ZONE_INTERVAL:
-            self.zone_timer %= ZONE_INTERVAL
+        interval = self.config.zone_interval
+        if self.zone_timer >= interval:
+            self.zone_timer %= interval
             self.make_dark_zones()
 
-    def update_light(self, dt):
+    def update_light(self, dt: float) -> None:
         """Samazina gaismas laiku."""
         if self.light_on:
             self.light_timer = max(0.0, self.light_timer - dt)
             self.light_on = self.light_timer > 0
 
-    def update_dark(self, dt):
+    def update_dark(self, dt: float) -> None:
         """Ja čūskas daļa ir tumsā un nav gaismā, noņem punktus un garumu."""
         dark_parts = [part for part in self.snake if part in self.dark_zones]
         if not dark_parts:
@@ -200,16 +258,16 @@ class Game:
         if all(self.is_lit(part) for part in dark_parts):
             return
 
-        self.dark_acc += dt * DARK_DRAIN
+        self.dark_acc += dt * self.config.dark_drain
         lost = int(self.dark_acc)
         self.dark_acc -= lost
         self.lose(lost)
         if len(self.snake) == MIN_LENGTH and self.score == MIN_SCORE:
             self.dark_acc = 0.0
 
-    def step(self):
+    def step(self) -> None:
         """Pārvieto čūsku par vienu šūnu."""
-        if self.is_finished():
+        if self.is_finished() or self.paused:
             return
         if self.queue:
             self.direction = self.queue.pop(0)
@@ -226,7 +284,11 @@ class Game:
 
         self.snake.insert(0, head)
         if eating:
+            level_before = self.level
             self.score += 1
+            self.apples_eaten += 1
+            if self.level != level_before:
+                self.banner_timer = LEVEL_BANNER_TIME
             self.spawn_apple()
         else:
             self.snake.pop()
