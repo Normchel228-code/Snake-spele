@@ -1,4 +1,5 @@
 """Snake: Light & Dark — zīmēšana, ievade un galvenā cilpa (Pygame)."""
+# pylint: disable=no-member
 
 import math
 from functools import cache
@@ -51,12 +52,16 @@ def draw_text(screen: pygame.Surface, string: str, size: int, color: Color,
               bold: bool = True, **position: Any) -> None:
     """Uzzīmē tekstu. Pozīciju norāda ar, piemēram, topleft=(x, y)."""
     surface = font(size, bold).render(string, True, color)
+    # **position izplata vārdnīcu kā atslēgas un vērtības:
+    # top_left=(x, y) kļūst par surface.get_rect(topleft=(x, y)).
     screen.blit(surface, surface.get_rect(**position))
 
 
 def mix(a: Color, b: Color, t: float) -> Color:
     """Sajauc divas krāsas: t=0 ir a, t=1 ir b."""
     t = max(0.0, min(1.0, t))
+    # zip ņem pa pāriem katru krāsas kanālu: R ar R, G ar G, B ar B.
+    # Tādējādi mēs varam vienlaikus apstrādāt abas krāsas bez indeksa.
     return tuple(round(x + (y - x) * t) for x, y in zip(a, b))
 
 
@@ -71,6 +76,9 @@ def has_moved(previous: list[Cell], snake: list[Cell]) -> bool:
     if not previous:
         return False
     (px, py), (hx, hy) = previous[0], snake[0]
+    # abs() atgriež skaitļa absolūto vērtību, tas ir, bez zīmes.
+    # Šeit mēs pārbaudām, vai galva ir pārvietojusies tieši par 1 šūnu:
+    # horizontāli vai vertikāli, ne pa diagonāli.
     return abs(px - hx) + abs(py - hy) == 1
 
 
@@ -189,6 +197,8 @@ def draw_apple(screen: pygame.Surface, cell: Cell) -> None:
     """Ābols ar kātiņu un lapiņu."""
     if cell[0] < 0:
         return
+    # *cell izplata (x, y) kā divus argumentus funkcijai:
+    # cell_to_pixel(x, y)
     cx, cy = cell_to_pixel(*cell)
     pygame.draw.circle(screen, (75, 36, 47), (cx, cy + 1), 9)
     pygame.draw.circle(screen, CORAL, (cx, cy), 7)
@@ -205,6 +215,7 @@ def draw_cut_tails(screen: pygame.Surface, game: Game) -> None:
         if p < 1.0:
             color = mix((75, 183, 145), FIELD, p)
             radius = max(1, round(7 * (1 - p)))
+            # *effect.cell izplata (x, y) kā divus argumentus, tāpat kā iepriekš.
             pygame.draw.circle(screen, color, cell_to_pixel(*effect.cell),
                                radius)
 
@@ -235,6 +246,8 @@ def snake_line(game: Game, previous: list[Cell],
         moved = (abs(old_tail[0] - line[0][0])
                  + abs(old_tail[1] - line[0][1]) == 1)
         if moved and progress < 0.999:
+            # abs() šeit pārbauda, vai aste ir nobīdījusies par vienu šūnu.
+            # Ja tā, tad pievienojam starpposma punktu, lai animācija būtu gluda.
             line.insert(0, lerp(line[0], old_tail, 1.0 - progress))
 
     head_index = len(line) - 1
@@ -250,6 +263,8 @@ def snake_line(game: Game, previous: list[Cell],
 def path_distances(line: list[Point]) -> list[float]:
     """Attālumi pa līniju no astes līdz katram punktam."""
     dist = [0.0]
+    # zip ņem blakus esošos punktus pa pāriem: (p0, p1), (p1, p2), (p2, p3)...
+    # Tā mēs viegli aprēķinām katra segmenta garumu un uzkrājam kopējo attālumu.
     for a, b in zip(line, line[1:]):
         dist.append(dist[-1] + segment_length(a, b))
     return dist
@@ -384,9 +399,12 @@ def draw_light(screen: pygame.Surface, game: Game,
     if not game.light_on:
         return
     overlay.fill((0, 0, 0, 0))
+    # *game.snake[0] izplata (x, y) kā divus argumentus funkcijai.
     cx, cy = cell_to_pixel(*game.snake[0])
     center = (cx - BOARD_X, cy - BOARD_Y)
     pulse = 58 + 10 * math.sin(pygame.time.get_ticks() / 260.0)
+    # *AMBER izplata RGB tripletu: (R, G, B) -> R, G, B, pēc tam pievieno alfa kanālu.
+    # Tādējādi iegūstam RGBA formātu: (R, G, B, alpha).
     pygame.draw.circle(overlay, (*AMBER, 18), center, CELL * 3)
     pygame.draw.circle(overlay, (*AMBER, round(pulse)), center, CELL * 2, 2)
     screen.blit(overlay, BOARD)
@@ -539,15 +557,17 @@ class App:
 
     def handle_game_key(self, event: pygame.event.Event) -> None:
         """Taustiņi spēlē: pagriezieni, pauze, gaisma, restarts."""
-        if event.key == pygame.K_ESCAPE:
+        key = getattr(event, "key", None)
+        scancode = getattr(event, "scancode", None)
+        if key == pygame.K_ESCAPE:
             self.in_menu = True
-        elif event.scancode == pygame.KSCAN_R:  # R — sākt no jauna.
+        elif key == pygame.K_r or scancode == pygame.KSCAN_R:
             self.new_round()
-        elif event.scancode == pygame.KSCAN_P:  # P — pauze.
+        elif key == pygame.K_p or scancode == pygame.KSCAN_P:
             self.game.toggle_pause()
-        elif event.key in KEYS:
-            self.queue_turn(KEYS[event.key])
-        elif event.key == pygame.K_SPACE:  # Atstarpe — gaismas impulss.
+        elif key in KEYS:
+            self.queue_turn(KEYS[key])
+        elif key == pygame.K_SPACE:  # Atstarpe — gaismas impulss.
             self.game.light_pulse()
 
     def queue_turn(self, direction: Cell) -> None:

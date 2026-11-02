@@ -1,34 +1,25 @@
-"""FastAPI serveris: rezultātu REST API un HTML lapas."""
+"""FastAPI serveris: rezultātu REST API."""
 
-from collections.abc import AsyncIterator
-from contextlib import asynccontextmanager
-from pathlib import Path
+from collections.abc import AsyncGenerator  # tips anotācijai: lifespan ir asinhrons ģenerators, kas dod `None` uz `async with`
+from contextlib import asynccontextmanager  # dekorators: pārveido lifespan par objektu `async with` (FastAPI izsauc to startā un beigās)
 
-from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import HTMLResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, ConfigDict, Field
-
+from fastapi import FastAPI, HTTPException # fast api pēc nosacījumiem; HTTPException: kļūda ar HTTP kodu (piem., 404)
+from pydantic import BaseModel, ConfigDict, Field  # BaseModel: datu modelis; ConfigDict: modeļa iestatījumi; Field: lauku ierobežojumi
 from api import db
 
-BASE_DIR = Path(__file__).parent
 MAX_NAME_LENGTH = 12  # Jāsakrīt ar MAX_NAME klientā.
 MAX_SCORE = 1_000_000
 NAME_PATTERN = r"^[\w-]+$"  # Burti, cipari, _ un -.
 
 
 @asynccontextmanager
-async def lifespan(_app: FastAPI) -> AsyncIterator[None]:
+async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     """Servera starta laikā izveido datubāzi."""
     db.init_db()
-    yield
+    yield # apstājas šeit: serveris strādā; pēc izslēgšanas kods turpinās pēc yield (šeit nav nekā)
 
 
 app = FastAPI(title="Snake: Light & Dark API", lifespan=lifespan)
-app.mount("/static", StaticFiles(directory=BASE_DIR / "static"),
-          name="static")
-templates = Jinja2Templates(directory=BASE_DIR / "templates")
 
 
 class ScoreIn(BaseModel):
@@ -65,8 +56,6 @@ class PlayerStats(BaseModel):
     last_played: str
 
 
-# ---------- REST API ----------
-
 @app.post("/scores", response_model=ScoreOut, status_code=201)
 def create_score(payload: ScoreIn) -> dict:
     """Saglabā rezultātu. 201 — izveidots jauns ieraksts."""
@@ -87,31 +76,3 @@ def get_player_stats(name: str) -> dict:
     if stats is None:
         raise HTTPException(status_code=404, detail="Player not found")
     return stats
-
-
-# ---------- HTML lapas ----------
-
-@app.get("/", response_class=HTMLResponse, include_in_schema=False)
-def leaderboard_page(request: Request) -> HTMLResponse:
-    """Līderu tabula (top-10)."""
-    return templates.TemplateResponse(
-        request, "index.html", {"rows": db.top_scores(10)}
-    )
-
-
-@app.get("/players/{name}", response_class=HTMLResponse,
-         include_in_schema=False)
-def player_page(request: Request, name: str) -> HTMLResponse:
-    """Spēlētāja profils ar statistiku."""
-    stats = db.player_stats(name)
-    status = 200 if stats else 404
-    return templates.TemplateResponse(
-        request, "player.html", {"name": name, "stats": stats},
-        status_code=status,
-    )
-
-
-@app.get("/rules", response_class=HTMLResponse, include_in_schema=False)
-def rules_page(request: Request) -> HTMLResponse:
-    """Spēles apraksts un noteikumi."""
-    return templates.TemplateResponse(request, "rules.html", {})

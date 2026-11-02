@@ -52,6 +52,7 @@ class Effect:
     """Nogrieztā astes posma animācija."""
 
     def __init__(self, cell: Cell, delay: float) -> None:
+        # cell = kura šūna izzūd; delay = cik ilgi gaidīt, līdz animācija sākas.
         self.cell = cell
         self.age = 0.0
         self.delay = delay
@@ -59,6 +60,8 @@ class Effect:
 
     def progress(self) -> float:
         """Animācijas progress no 0 līdz 1."""
+        # Kad age ir mazāks par delay, animācija vēl nav sākusies.
+        # Kad age ir lielāks par delay + duration, animācija beigusies.
         return max(0.0, min(1.0, (self.age - self.delay) / self.duration))
 
     def is_done(self) -> bool:
@@ -79,24 +82,24 @@ class Game:
     def reset(self) -> None:
         """Sāk spēli no jauna."""
         x, y = self.width // 2, self.height // 2
-        # Galva ir pirmais elements.
+        # Galva ir pirmais elements. Tādēļ čūska sākas ar horizontālu ķermeni.
         self.snake: list[Cell] = [(x - i, y) for i in range(START_LENGTH)]
         self.score = 0
         self.apples_eaten = 0  # Līmeni nosaka ābolu skaits, nevis punkti.
-        self.banner_timer = 0.0  # Cik ilgi vēl rāda "LEVEL n".
+        self.banner_timer = 0.0  # Cik ilgi vēl rāda “LEVEL n”.
         self.direction = RIGHT
-        self.queue: list[Cell] = []  # Nākamie pagriezieni.
-        self.effects: list[Effect] = []
+        self.queue: list[Cell] = []  # Nākamie pagriezieni; katrs tiek gaidīti rindā.
+        self.effects: list[Effect] = []  # Izgrieztas astes animācijas fragmenti.
         self.game_over = False
         self.game_won = False
         self.paused = False
-        self.zone_timer = 0.0
-        self.fade_timer = 0.0
-        self.dark_acc = 0.0  # Uzkrātā tumsas "rēķina" daļa.
+        self.zone_timer = 0.0  # Laiks kopš pēdējās tumšo zonu maiņas.
+        self.fade_timer = 0.0  # Laiks, ko aizņem zonu pāreja.
+        self.dark_acc = 0.0  # Uzkrātā tumsas “rēķina” daļa.
         self.light_on = False
         self.light_timer = 0.0
-        self.dark_zones: set[Cell] = set()
-        self.old_dark_zones: set[Cell] = set()
+        self.dark_zones: set[Cell] = set()  # Pašreizējās tumšās šūnas.
+        self.old_dark_zones: set[Cell] = set()  # Vecās zonas pārejas laikā.
         self.apple: Cell = (-1, -1)
         self.spawn_apple()
         self.make_dark_zones(animate=False)
@@ -139,13 +142,15 @@ class Game:
         Ābols vienmēr paliek gaišā vietā. Spēles sākumā gaišas paliek
         arī čūskas šūnas, lai tā nesāktu tumsā.
         """
+        # keep_clear ir “sargātās” šūnas: tās nedrīkst kļūt tumšas.
+        # Tāpat kā ābols un sākumā arī čūska paliek ārpus tumšajām zonām.
         keep_clear = {self.apple}
         if not animate:
             keep_clear.update(self.snake)
         zones: set[Cell] = set()
         target = int(self.width * self.height * random.uniform(0.14, 0.18))
         for _ in range(random.randint(4, 6)):
-            # Katrs aplis ir viena tumša "sala".
+            # Katrs aplis ir viena tumša “sala”, kas izplatās pa elipsi.
             cx = random.randrange(self.width)
             cy = random.randrange(self.height)
             rx, ry = random.randint(2, 4), random.randint(2, 4)
@@ -157,18 +162,22 @@ class Game:
             if len(zones) >= target:
                 break
 
+        # Pārejas laikā glabājam arī vecās zonas, lai tās pamazām izzustu,
+        # nevis pēkšņi pazustu, kas izskatītos neglīti.
         self.old_dark_zones = self.dark_zones if animate else set()
         self.dark_zones = zones
         self.fade_timer = ZONE_FADE_TIME if animate else 0.0
 
     def spawn_apple(self) -> None:
         """Novieto ābolu brīvā vietā, ja iespējams — gaišā."""
+        # free = visas vietas, kas nav čūskas ķermenis.
         free = [
             (x, y)
             for x in range(self.width)
             for y in range(self.height)
             if (x, y) not in self.snake
         ]
+        # light = vietas, kas nav tumšās zonās; ja tās ir, izvēlas tām tuvāk.
         light = [cell for cell in free if cell not in self.dark_zones]
         if free:
             self.apple = random.choice(light or free)
@@ -178,6 +187,8 @@ class Game:
 
     def turn(self, new_dir: Cell) -> None:
         """Pieņem jaunu virzienu, ja tas ir derīgs."""
+        # Jo ātrāk spiedīs taustiņus, jo vairāk virzienu var uzkrāt rindā.
+        # Bet mēs neļaujam ieiet pašreizējā virzienā atpakaļ vai uzkrāt pārāk daudz.
         if self.is_finished() or self.paused or len(self.queue) >= 2:
             return
         last = self.queue[-1] if self.queue else self.direction
@@ -186,6 +197,8 @@ class Game:
 
     def lose(self, amount: int) -> None:
         """Atņem punktus un garumu, bet ne zem minimuma."""
+        # amount = cik daudz “svara” tumsai vai gaismai ir jāņem no čūskas.
+        # Katrs zaudētais posms rada vienu animācijas efektu astes izgriešanai.
         self.score = max(MIN_SCORE, self.score - amount)
         cuts = min(amount, len(self.snake) - MIN_LENGTH)
         for _ in range(cuts):
@@ -195,6 +208,8 @@ class Game:
 
     def light_pulse(self) -> None:
         """Ieslēdz gaismu, ja pēc maksas čūska paliek vismaz minimālā."""
+        # Gaisma ir “izņēmums” no tumšās zonas: tā īslaicīgi padara daļu no laukuma
+        # drošu, bet maksā zaudētu garumu un punktus.
         if self.is_finished() or self.paused or self.light_on:
             return
         if len(self.snake) - LIGHT_COST < MIN_LENGTH:
@@ -205,6 +220,8 @@ class Game:
 
     def is_lit(self, cell: Cell) -> bool:
         """Vai šūna ir gaismas rādiusā ap galvu."""
+        # Pārbaudam, vai šūna atrodas galvas apkārtnē ar rādiusu LIGHT_RADIUS.
+        # Matemātiski tas ir rādiusa aplis: (x - hx)^2 + (y - hy)^2 <= r^2.
         if not self.light_on:
             return False
         hx, hy = self.snake[0]
@@ -216,12 +233,15 @@ class Game:
         if self.paused:
             return
         dt = max(0.0, dt)
+        # Katram kadram samazina banneru, animācijas un gaismu.
         self.banner_timer = max(0.0, self.banner_timer - dt)
         self.update_effects(dt)
         self.update_zones(dt)
         if self.is_finished():
             return
-        self.update_dark(dt)  # Tumsa jāskaita pirms gaismas samazināšanas.
+        # Tumsa tiek skaitīta pirms gaismas samazināšanas, lai spēle reāli justos tikpat,
+        # kā cilvēka redze: tumsā jūtams drudzis, nevis “gaisma nodziest pirms vērtējuma”.
+        self.update_dark(dt)
         self.update_light(dt)
 
     def update_effects(self, dt: float) -> None:
@@ -232,6 +252,7 @@ class Game:
 
     def update_zones(self, dt: float) -> None:
         """Pārslēdz tumšās zonas laikā un noņem veco pārejas zonu."""
+        # fade_timer rāda, cik ilgi pagājušās zonas vēl mirdz vai izzūd.
         self.fade_timer = max(0.0, self.fade_timer - dt)
         if self.fade_timer == 0:
             self.old_dark_zones = set()
@@ -240,6 +261,7 @@ class Game:
         self.zone_timer += dt
         interval = self.config.zone_interval
         if self.zone_timer >= interval:
+            # Kad pagājis intervals, maina tumšo zonu komplektu un sāk jaunu pāreju.
             self.zone_timer %= interval
             self.make_dark_zones()
 
@@ -251,10 +273,12 @@ class Game:
 
     def update_dark(self, dt: float) -> None:
         """Ja čūskas daļa ir tumsā un nav gaismā, noņem punktus un garumu."""
+        # dark_parts = visas čūskas šūnas, kas atrodas tumšajā zonā.
         dark_parts = [part for part in self.snake if part in self.dark_zones]
         if not dark_parts:
             self.dark_acc = 0.0
             return
+        # Ja visas tumšās šūnas joprojām ir apgaismotas, nav jūtams zaudējums.
         if all(self.is_lit(part) for part in dark_parts):
             return
 
@@ -267,6 +291,7 @@ class Game:
 
     def step(self) -> None:
         """Pārvieto čūsku par vienu šūnu."""
+        # Kad vienkārši “soļo”, vispirms izvēlas pagriezienu no rindas, ja tāds ir.
         if self.is_finished() or self.paused:
             return
         if self.queue:
@@ -274,7 +299,8 @@ class Game:
 
         head = add(self.snake[0], self.direction)
         eating = head == self.apple
-        # Ja čūska neēd, astes šūna pēc soļa atbrīvojas, tāpēc to neskaitām.
+        # Ja čūska ēd, aste paliek pilnībā, jo zvērs pieaug.
+        # Ja neēd, astes pēdējais posms pazūd kā parasts solis.
         body = self.snake if eating else self.snake[:-1]
 
         out = not (0 <= head[0] < self.width and 0 <= head[1] < self.height)

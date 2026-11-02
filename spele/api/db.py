@@ -1,10 +1,10 @@
 """SQLite datubāze: rezultātu tabula un vaicājumi."""
 
-import os
-import sqlite3
-from collections.abc import Iterator
-from contextlib import contextmanager
-from pathlib import Path
+import os  # piekļuve vides mainīgajiem, piemēram SNAKE_DB
+import sqlite3  # SQLite API: connect, execute, commit/rollback
+from collections.abc import Generator  # ģeneratora tips, ko atgriež `@contextmanager`
+from contextlib import contextmanager  # padara funkciju par `with ... as ...` menedžeri
+from pathlib import Path  # darba ar faila ceļiem, lai atrastu DB failu
 
 DEFAULT_DB = Path(__file__).with_name("scores.db")
 
@@ -14,14 +14,16 @@ def db_path() -> Path:
     return Path(os.environ.get("SNAKE_DB", DEFAULT_DB))
 
 
+# `with connect() as conn:` automātiski atver un aizver savienojumu.
 @contextmanager
-def connect() -> Iterator[sqlite3.Connection]:
+def connect() -> Generator[sqlite3.Connection, None, None]:
+    # `None, None` => ģenerators neņem nevienu vērtību (send) un negriež rezultātu; tas tikai "atdod" `conn` uz `with ... as conn`.
     """Atver savienojumu; veiksmē saglabā izmaiņas, kļūdā atceļ."""
     conn = sqlite3.connect(db_path())
     conn.row_factory = sqlite3.Row
     try:
         with conn:
-            yield conn
+            yield conn  # nodod savienojumu uz `as conn` blokā; pēc bloka darbosies `finally`
     finally:
         conn.close()
 
@@ -54,6 +56,7 @@ def add_score(name: str, score: int) -> int:
 
 
 def top_scores(limit: int = 10) -> list[dict]:
+    # `limit` ir skaitlis, `list[dict]` nozīmē atgriežam sarakstu ar vārdnīcām.
     """Labākie rezultāti: vispirms lielākie, pie vienādiem — vecākie."""
     with connect() as conn:
         rows = conn.execute(
@@ -68,6 +71,7 @@ def top_scores(limit: int = 10) -> list[dict]:
 
 
 def player_stats(name: str) -> dict | None:
+    # `name` ir teksts; atgriežam vārdnīcu ar statistiku vai `None`, ja spēlētājs nav atrasts.
     """Spēlētāja statistika vai None, ja tādu spēlētāju nav."""
     with connect() as conn:
         row = conn.execute(
@@ -82,4 +86,7 @@ def player_stats(name: str) -> dict | None:
         ).fetchone()
     if row["games"] == 0:
         return None
+# `**dict(row)` = "atver vārdnīcu": paņem visas atslēgas un vērtības no `row`
+# un ievieto tās jaunā vārdnīcā. Tādējādi `name` pievienojam pats,
+# bet pārējie lauki (`games`, `best`, `average`, `last_played`) nāk no SQL-atbildes.
     return {"name": name, **dict(row)}

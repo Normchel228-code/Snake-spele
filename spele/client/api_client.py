@@ -10,6 +10,10 @@ TIMEOUT = 2.0  # Sekundes, cik ilgi gaidām serveri.
 
 
 def submit_score(name: str, score: int) -> tuple[str, bool]:
+    # `tuple[str, bool]` = atgriežam divus elementus: pirmo — tekstu spēlētājam,
+    # otro — booleanu, kas norāda, vai sūtīšana neizdevās.
+    # Piemērs: ("SCORE SAVED", False) vai ("SERVER OFFLINE", True)
+    # Tas ir ērti, jo vienā funkcijā atgriežam gan ziņojumu, gan statusu.
     """Nosūta rezultātu serverim.
 
     Atgriež pāri (teksts spēlētājam, vai neizdevās). Nekad nemet

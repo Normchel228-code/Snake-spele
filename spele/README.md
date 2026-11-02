@@ -58,4 +58,10 @@ Sākuma izvēlnē ieraksti spēlētāja vārdu (līdz 12 burtiem vai cipariem, `
 
 Klients spēli var turpināt arī bez servera, taču bez pieejama API rezultāts netiek saglabāts. API adresi var mainīt ar `SNAKE_API_URL` (noklusējums ir `http://127.0.0.1:8000`), bet datubāzes failu — ar `SNAKE_DB`.
 
-Pašreizējā projekta kokā API vēl nav palaižams: `api/main.py` meklē statiskos failus un HTML veidnes mapē `api/`, bet stili atrodas saknes mapē `static/`, un HTML veidņu nav. Līdz šo ceļu un trūkstošo veidņu sakārtošanai rezultātu API nav pieejams.
+Serveris tiek palaists no projekta saknes:
+
+```bash
+uvicorn api.main:app --reload
+```
+
+Pārbaude pārlūkā: `http://localhost:8000/docs`. HTML lapas (līderu tabula, spēlētāja profils) tiks pievienotas nākamajā solī.

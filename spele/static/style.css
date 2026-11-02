@@ -1,6 +1,8 @@
 /* Krāsas: tikai #rrggbb. Tās pašas, kas client/main.py. Izmēri: tikai px. */
 
 :root {
+  /* Šeit definētas krāsas kā nosaukumi (mainīgie).
+     Pēc tam var rakstīt nevis #f6c168, bet var(--amber). */
   --bg: #0c1117;
   --panel: #141b24;
   --edge: #27313e;
@@ -17,6 +19,7 @@
 
 body {
   margin: 0;
+  /* var(--bg) nozīmē: "ņem krāsu no :root mainīgā --bg". */
   background: var(--bg);
   color: var(--text);
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
@@ -36,11 +39,16 @@ a:hover {
 /* ---------- Galvene un kājene ---------- */
 
 .site-header {
+  /* display: flex; nozīmē: "ieliec bērnus vienā rindā". */
   display: flex;
+  /* justify-content: space-between; izstiepj elementus pa kreisi un pa labi,
+     lai viens ir sākumā, otrs beigās, un starp tiem paliek atstarpe. */
   justify-content: space-between;
+  /* align-items: center; novieto elementus vertikāli centrā. */
   align-items: center;
   padding: 16px 32px;
   background: var(--panel);
+  /* border-bottom: 1px solid ...; pievieno plānu apakšējo robežu. */
   border-bottom: 1px solid var(--edge);
 }
 
@@ -83,6 +91,7 @@ h1 {
 
 h2 {
   margin-top: 32px;
+  /* var(--amber) ir CSS mainīgais, kas glabā zelta/dzeltenīgu krāsu. */
   color: var(--amber);
   font-size: 18px;
 }
@@ -120,6 +129,7 @@ tbody tr {
 
 /* 1. vieta ir izcelta. */
 tbody tr:first-child {
+  /* Pirmā rinda tabulā būs izcelta, lai tā izskatītos kā līderis/izcēlums. */
   background: var(--highlight);
 }
 
@@ -144,14 +154,19 @@ tbody tr:first-child .score {
 }
 
 .stats {
+  /* flex ļauj elementus novietot vienā rindā. */
   display: flex;
+  /* gap: 12px; pievieno horizontālu atstarpi starp kartēm. */
   gap: 12px;
   margin: 20px 0;
 }
 
 .stats .card {
+  /* Šeit katrs elements kļūst arī flex konteiners. */
   display: flex;
+  /* flex: 1; nozīmē: “ņem vienādu daļu no pieejamās platuma”. */
   flex: 1;
+  /* flex-direction: column; liek saturu stāvēt kolonnā — no augšas uz leju. */
   flex-direction: column;
 }
 
@@ -170,12 +185,15 @@ tbody tr:first-child .score {
 /* ---------- Šaurs ekrāns ---------- */
 
 @media (max-width: 520px) {
+  /* Šis noteikums darbojas tikai uz maziem ekrāniem. */
   .site-header {
+    /* Apsver: vietā, kur bija “rinda”, tagad veidojam kolonu. */
     flex-direction: column;
     gap: 8px;
   }
 
   .stats {
+    /* Uz mobilā ekrāna statistikām arī jāstājas vertikāli. */
     flex-direction: column;
   }
 }
