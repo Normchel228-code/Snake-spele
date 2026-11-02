@@ -66,7 +66,7 @@ Sākuma izvēlnē ieraksti spēlētāja vārdu (līdz 12 burtiem vai cipariem, `
 
 ## Rezultātu API
 
-Klients spēli var turpināt arī bez servera, taču bez pieejama API rezultāts netiek saglabāts. API adresi var mainīt ar `SNAKE_API_URL` (noklusējums ir `http://127.0.0.1:8000`), bet datubāzes failu — ar `SNAKE_DB`.
+Klients spēli var turpināt arī bez servera, taču bez pieejama API rezultāts netiek saglabāts. API adresi var mainīt ar `SNAKE_API_URL` (noklusējums ir [http://127.0.0.1:8000](http://127.0.0.1:8000)), bet datubāzes failu — ar `SNAKE_DB`.
 
 Serveris tiek palaists no projekta saknes:
 
@@ -74,11 +74,13 @@ Serveris tiek palaists no projekta saknes:
 uvicorn api.main:app --reload
 ```
 
-Pārbaude pārlūkā: `http://localhost:8000/docs`.
+Pārbaude pārlūkā: [http://localhost:8000/docs](http://localhost:8000/docs).
 
-HTML mājaslapas tiek serverētas arī tieši no API:
+Ja HTML lapas tiek pārbaudītas lokāli, tās jāatver tieši pārlūkā, piemēram:
 
-- `http://localhost:8000/` — līderu tabula
-- `http://localhost:8000/rules` — spēles noteikumi
-- `http://localhost:8000/players/<vards>` — spēlētāja profils
+- [http://127.0.0.1:8008/rules.html](http://127.0.0.1:8008/rules.html) — spēles noteikumi
+- [http://127.0.0.1:8008/index.html](http://127.0.0.1:8008/index.html) — līderu tabula
+- [http://127.0.0.1:8008/player.html](http://127.0.0.1:8008/player.html) — spēlētāja profils
+
+Tas ir piemērots testiem un lokālai validācijai, kad lapas tiek palaistas kā statiskās HTML failu versijas.
 
