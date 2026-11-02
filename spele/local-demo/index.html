@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Snake: Light & Dark — līderu tabula, noteikumi un spēlētāju statistika."
+    />
+    <title>Snake leaderboard</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Pāriet uz saturu</a>
+
+    <header class="site-header" aria-label="Galvenā navigācija">
+      <a href="./index.html" class="brand" aria-label="Atgriezties uz līderu tabulu">
+        <span class="brand-mark">SNAKE</span>
+        <span class="brand-subtitle">LIGHT / DARK</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Navigācijas saites">
+        <a href="./index.html" class="nav-link">Līderi</a>
+        <a href="./rules.html" class="nav-link">Noteikumi</a>
+      </nav>
+    </header>
+
+    <main id="main-content" class="page-shell">
+      <section class="hero panel" aria-labelledby="leaderboard-title">
+        <div class="eyebrow">Spēles rezultāti</div>
+        <h1 id="leaderboard-title">Līderu tabula</h1>
+        <p class="lead">
+          Top 10 labākie rezultāti. Katrs ieraksts atspoguļo spēlētāja vārdu, punktu
+          skaitu un reģistrācijas laiku.
+        </p>
+      </section>
+
+      <section class="panel" aria-labelledby="scores-table-title">
+        <div class="section-header">
+          <h2 id="scores-table-title">Labākie rezultāti</h2>
+          <span class="badge">10 ieraksti</span>
+        </div>
+
+        <div class="table-wrap">
+          <table aria-label="Līderu tabula">
+            <thead>
+              <tr>
+                <th scope="col">#</th>
+                <th scope="col">Spēlētājs</th>
+                <th scope="col">Punkti</th>
+                <th scope="col">Saglabāts</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="rank">1</td>
+                <td><a href="./player.html" class="player-link">Ann</a></td>
+                <td class="value-score">1480</td>
+                <td>2026-11-02 18:42</td>
+              </tr>
+              <tr>
+                <td class="rank">2</td>
+                <td><a href="./player.html" class="player-link">Marts</a></td>
+                <td class="value-score">1325</td>
+                <td>2026-11-01 21:10</td>
+              </tr>
+              <tr>
+                <td class="rank">3</td>
+                <td><a href="./player.html" class="player-link">Liene</a></td>
+                <td class="value-score">1197</td>
+                <td>2026-10-31 17:33</td>
+              </tr>
+              <tr>
+                <td class="rank">4</td>
+                <td><a href="./player.html" class="player-link">Raitis</a></td>
+                <td class="value-score">1044</td>
+                <td>2026-10-30 09:11</td>
+              </tr>
+              <tr>
+                <td class="rank">5</td>
+                <td><a href="./player.html" class="player-link">Dāvis</a></td>
+                <td class="value-score">981</td>
+                <td>2026-10-29 13:55</td>
+              </tr>
+              <tr>
+                <td class="rank">6</td>
+                <td><a href="./player.html" class="player-link">Ieva</a></td>
+                <td class="value-score">900</td>
+                <td>2026-10-28 08:14</td>
+              </tr>
+              <tr>
+                <td class="rank">7</td>
+                <td><a href="./player.html" class="player-link">Jānis</a></td>
+                <td class="value-score">843</td>
+                <td>2026-10-27 15:22</td>
+              </tr>
+              <tr>
+                <td class="rank">8</td>
+                <td><a href="./player.html" class="player-link">Emīls</a></td>
+                <td class="value-score">775</td>
+                <td>2026-10-26 22:03</td>
+              </tr>
+              <tr>
+                <td class="rank">9</td>
+                <td><a href="./player.html" class="player-link">Skaidrīte</a></td>
+                <td class="value-score">701</td>
+                <td>2026-10-24 19:44</td>
+              </tr>
+              <tr>
+                <td class="rank">10</td>
+                <td><a href="./player.html" class="player-link">Krišs</a></td>
+                <td class="value-score">668</td>
+                <td>2026-10-23 11:29</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="game-about-title">
+        <div class="section-header">
+          <h2 id="game-about-title">Par spēli</h2>
+        </div>
+        <p>
+          Snake: Light & Dark ir ātruma spēle, kurā čūska aug, apkārtējā tumsa maina
+          spēles ritmu un piespiež izmantot gaismas impulsu, lai izdzīvotu.
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Snake: Light & Dark · Static demo</p>
+    </footer>
+  </body>
+</html>

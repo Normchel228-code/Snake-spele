@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero panel" aria-labelledby="leaderboard-title">
+    <div class="eyebrow">Spēles rezultāti</div>
+    <h1 id="leaderboard-title">Līderu tabula</h1>
+    <p class="lead">
+      Top 10 labākie rezultāti no SQLite datubāzes. Katrs ieraksts atspoguļo spēlētāja
+      vārdu, punktu skaitu un reģistrācijas laiku.
+    </p>
+  </section>
+
+  <section class="panel" aria-labelledby="scores-table-title">
+    <div class="section-header">
+      <h2 id="scores-table-title">Labākie rezultāti</h2>
+      <span class="badge">10 ieraksti</span>
+    </div>
+
+    <div class="table-wrap">
+      <table aria-label="Līderu tabula">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Spēlētājs</th>
+            <th scope="col">Punkti</th>
+            <th scope="col">Saglabāts</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for score in scores %}
+            <tr>
+              <td class="rank">{{ loop.index }}</td>
+              <td><a href="/players/{{ score.name }}" class="player-link">{{ score.name }}</a></td>
+              <td class="value-score">{{ score.score }}</td>
+              <td>{{ score.created_at[:16] }}</td>
+            </tr>
+          {% else %}
+            <tr>
+              <td colspan="4" class="empty-state">Vēl nav saglabātu rezultātu. Sāc spēli un esi pirmais.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="game-about-title">
+    <div class="section-header">
+      <h2 id="game-about-title">Par spēli</h2>
+    </div>
+    <p>
+      Snake: Light & Dark ir ātruma spēle, kurā čūska aug, apkārtējā tumsa pastāvīgi
+      maina spēles ritmu un piespiež izmantot gaismas impulsu, lai izdzīvotu. Rekordi tiek
+      saglabāti API serverī un parādīti šeit līderu tabulā.
+    </p>
+  </section>
+{% endblock %}

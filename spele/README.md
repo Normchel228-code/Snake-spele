@@ -71,4 +71,11 @@ Serveris tiek palaists no projekta saknes:
 uvicorn api.main:app --reload
 ```
 
-Pārbaude pārlūkā: `http://localhost:8000/docs`. HTML lapas (līderu tabula, spēlētāja profils) tiks pievienotas nākamajā solī.
+Pārbaude pārlūkā: `http://localhost:8000/docs`.
+
+HTML mājaslapas tiek serverētas arī tieši no API:
+
+- `http://localhost:8000/` — līderu tabula
+- `http://localhost:8000/rules` — spēles noteikumi
+- `http://localhost:8000/players/<vards>` — spēlētāja profils
+

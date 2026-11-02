@@ -1,9 +1,12 @@
-"""FastAPI serveris: rezultātu REST API."""
+"""FastAPI serveris: rezultātu REST API un HTML mājaslapas."""
 
 from collections.abc import AsyncGenerator  # tips anotācijai: lifespan ir asinhrons ģenerators, kas dod `None` uz `async with`
 from contextlib import asynccontextmanager  # dekorators: pārveido lifespan par objektu `async with` (FastAPI izsauc to startā un beigās)
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException # fast api pēc nosacījumiem; HTTPException: kļūda ar HTTP kodu (piem., 404)
+from fastapi import FastAPI, HTTPException, Request  # fast api pēc nosacījumiem; HTTPException: kļūda ar HTTP kodu (piem., 404)
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, ConfigDict, Field  # BaseModel: datu modelis; ConfigDict: modeļa iestatījumi; Field: lauku ierobežojumi
 from api import db
 
@@ -19,7 +22,10 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     yield # apstājas šeit: serveris strādā; pēc izslēgšanas kods turpinās pēc yield (šeit nav nekā)
 
 
+BASE_DIR = Path(__file__).resolve().parents[1]
 app = FastAPI(title="Snake: Light & Dark API", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+templates = Jinja2Templates(directory=str(BASE_DIR / "api" / "templates"))
 
 
 class ScoreIn(BaseModel):
@@ -76,3 +82,37 @@ def get_player_stats(name: str) -> dict:
     if stats is None:
         raise HTTPException(status_code=404, detail="Player not found")
     return stats
+
+
+@app.get("/", include_in_schema=False)
+def home_page(request: Request):
+    """Līderu tabula."""
+    scores = db.top_scores(10)
+    return templates.TemplateResponse(
+        request,
+        "index.html",
+        {"scores": scores, "title": "Snake leaderboard"},
+    )
+
+
+@app.get("/players/{name}", include_in_schema=False)
+def player_page(request: Request, name: str):
+    """Spēlētāja profils."""
+    stats = db.player_stats(name)
+    if stats is None:
+        raise HTTPException(status_code=404, detail="Player not found")
+    return templates.TemplateResponse(
+        request,
+        "player.html",
+        {"player": stats, "title": f"Player: {name}"},
+    )
+
+
+@app.get("/rules", include_in_schema=False)
+def rules_page(request: Request):
+    """Spēles noteikumi."""
+    return templates.TemplateResponse(
+        request,
+        "rules.html",
+        {"title": "Game rules"},
+    )

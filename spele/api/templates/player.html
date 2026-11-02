@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <section class="hero panel" aria-labelledby="profile-title">
+    <div class="eyebrow">Spēlētāja profils</div>
+    <h1 id="profile-title">{{ player.name }}</h1>
+    <p class="lead">Statistika un spēles vēsture par šo spēlētāju.</p>
+  </section>
+
+  <section class="stats-grid" aria-label="Spēlētāja statistika">
+    <article class="stat-card panel">
+      <span class="label">Spēles</span>
+      <strong class="value">{{ player.games }}</strong>
+    </article>
+    <article class="stat-card panel">
+      <span class="label">Labākais rezultāts</span>
+      <strong class="value">{{ player.best }}</strong>
+    </article>
+    <article class="stat-card panel">
+      <span class="label">Vidējais rezultāts</span>
+      <strong class="value">{{ '%.1f'|format(player.average) }}</strong>
+    </article>
+  </section>
+
+  <section class="panel" aria-labelledby="profile-details-title">
+    <div class="section-header">
+      <h2 id="profile-details-title">Detalizēta informācija</h2>
+    </div>
+    <dl class="details-list">
+      <div>
+        <dt>Pēdējoreiz spēlēts:</dt>
+        <dd>{{ player.last_played }}</dd>
+      </div>
+    </dl>
+    <p>
+      <a href="{{ url_for('home_page') }}" class="text-link">← Atpakaļ uz līderu tabulu</a>
+    </p>
+  </section>
+{% endblock %}

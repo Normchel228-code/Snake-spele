@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Spēlētāja profils un statistika." />
+    <title>Player profile</title>
+    <link rel="stylesheet" href="./style.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Pāriet uz saturu</a>
+
+    <header class="site-header" aria-label="Galvenā navigācija">
+      <a href="./index.html" class="brand" aria-label="Atgriezties uz līderu tabulu">
+        <span class="brand-mark">SNAKE</span>
+        <span class="brand-subtitle">LIGHT / DARK</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Navigācijas saites">
+        <a href="./index.html" class="nav-link">Līderi</a>
+        <a href="./rules.html" class="nav-link">Noteikumi</a>
+      </nav>
+    </header>
+
+    <main id="main-content" class="page-shell">
+      <section class="hero panel" aria-labelledby="profile-title">
+        <div class="eyebrow">Spēlētāja profils</div>
+        <h1 id="profile-title">Ann</h1>
+        <p class="lead">Statistika un spēles vēsture par šo spēlētāju.</p>
+      </section>
+
+      <section class="stats-grid" aria-label="Spēlētāja statistika">
+        <article class="stat-card panel">
+          <span class="label">Spēles</span>
+          <strong class="value">24</strong>
+        </article>
+        <article class="stat-card panel">
+          <span class="label">Labākais rezultāts</span>
+          <strong class="value">1480</strong>
+        </article>
+        <article class="stat-card panel">
+          <span class="label">Vidējais rezultāts</span>
+          <strong class="value">620.5</strong>
+        </article>
+      </section>
+
+      <section class="panel" aria-labelledby="profile-details-title">
+        <div class="section-header">
+          <h2 id="profile-details-title">Detalizēta informācija</h2>
+        </div>
+        <dl class="details-list">
+          <div>
+            <dt>Pēdējoreiz spēlēts:</dt>
+            <dd>2026-11-02 18:42</dd>
+          </div>
+        </dl>
+        <p>
+          <a href="./index.html" class="text-link">← Atpakaļ uz līderu tabulu</a>
+        </p>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Snake: Light & Dark · Static demo</p>
+    </footer>
+  </body>
+</html>

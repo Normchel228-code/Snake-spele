@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="lv">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Snake: Light & Dark — spēles līderu tabula, noteikumi un spēlētāju statistika."
+    />
+    <title>{{ title or 'Snake leaderboard' }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
+  </head>
+  <body>
+    <a class="skip-link" href="#main-content">Pāriet uz saturu</a>
+
+    <header class="site-header" aria-label="Galvenā navigācija">
+      <a href="{{ url_for('home_page') }}" class="brand" aria-label="Atgriezties uz līderu tabulu">
+        <span class="brand-mark">SNAKE</span>
+        <span class="brand-subtitle">LIGHT / DARK</span>
+      </a>
+
+      <nav class="site-nav" aria-label="Navigācijas saites">
+        <a href="{{ url_for('home_page') }}" class="nav-link">Līderi</a>
+        <a href="{{ url_for('rules_page') }}" class="nav-link">Noteikumi</a>
+      </nav>
+    </header>
+
+    <main id="main-content" class="page-shell">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <p>Snake: Light & Dark · FastAPI + Jinja2</p>
+    </footer>
+  </body>
+</html>

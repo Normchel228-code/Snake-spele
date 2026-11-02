@@ -1,30 +1,40 @@
-/* Krāsas: tikai #rrggbb. Tās pašas, kas client/main.py. Izmēri: tikai px. */
-
 :root {
-  /* Šeit definētas krāsas kā nosaukumi (mainīgie).
-     Pēc tam var rakstīt nevis #f6c168, bet var(--amber). */
-  --bg: #0c1117;
-  --panel: #141b24;
-  --edge: #27313e;
-  --text: #ebf1f5;
-  --muted: #8594a4;
+  --bg: #0b1117;
+  --bg-soft: #121b24;
+  --panel: #141d28;
+  --panel-strong: #1b2734;
+  --edge: #2b3a4b;
+  --text: #eaf3f7;
+  --muted: #a3b6c7;
   --mint: #63e1b2;
+  --mint-deep: #2f9c78;
   --amber: #f6c168;
-  --highlight: #2f2f2c;
+  --highlight: rgba(246, 193, 104, 0.1);
+  --shadow: rgba(0, 0, 0, 0.25);
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   margin: 0;
-  /* var(--bg) nozīmē: "ņem krāsu no :root mainīgā --bg". */
-  background: var(--bg);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top, rgba(99, 225, 178, 0.08), transparent 30%),
+    var(--bg);
   color: var(--text);
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: "Segoe UI", Inter, Roboto, sans-serif;
+  line-height: 1.6;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
 }
 
 a {
@@ -32,168 +42,301 @@ a {
   text-decoration: none;
 }
 
-a:hover {
+a:hover,
+a:focus-visible {
   text-decoration: underline;
 }
 
-/* ---------- Galvene un kājene ---------- */
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  background: var(--mint);
+  color: #0a1117;
+  font-weight: 700;
+  z-index: 999;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
 
 .site-header {
-  /* display: flex; nozīmē: "ieliec bērnus vienā rindā". */
+  position: sticky;
+  top: 0;
+  z-index: 20;
   display: flex;
-  /* justify-content: space-between; izstiepj elementus pa kreisi un pa labi,
-     lai viens ir sākumā, otrs beigās, un starp tiem paliek atstarpe. */
-  justify-content: space-between;
-  /* align-items: center; novieto elementus vertikāli centrā. */
   align-items: center;
-  padding: 16px 32px;
-  background: var(--panel);
-  /* border-bottom: 1px solid ...; pievieno plānu apakšējo robežu. */
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 2rem;
+  background: rgba(20, 29, 40, 0.92);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--edge);
+  box-shadow: 0 6px 20px var(--shadow);
 }
 
 .brand {
-  color: var(--text);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.65rem;
+  letter-spacing: 0.08em;
+}
+
+.brand-mark {
+  font-size: 1.15rem;
   font-weight: 800;
-  letter-spacing: 1px;
+  color: var(--text);
 }
 
-.brand span {
+.brand-subtitle {
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 0.75rem;
+  font-weight: 700;
 }
 
-nav a {
-  margin-left: 20px;
+.site-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
-.site-footer {
-  padding: 24px;
-  color: var(--muted);
-  font-size: 14px;
-  text-align: center;
+.nav-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  color: var(--text);
+  background: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 }
 
-/* ---------- Saturs ---------- */
+.nav-link:hover,
+.nav-link:focus-visible {
+  background: rgba(99, 225, 178, 0.08);
+  border-color: rgba(99, 225, 178, 0.25);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
 
-main {
-  max-width: 760px;
+.page-shell {
+  max-width: 1000px;
   margin: 0 auto;
-  padding: 32px 20px 64px;
+  padding: 2.5rem 1.25rem 4rem;
+}
+
+.panel {
+  background: linear-gradient(180deg, var(--panel), var(--panel-strong));
+  border: 1px solid var(--edge);
+  border-radius: 1rem;
+  box-shadow: 0 16px 30px var(--shadow);
+}
+
+.hero {
+  padding: 2rem 2rem 1.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  display: inline-block;
+  margin-bottom: 0.75rem;
+  padding: 0.4rem 0.7rem;
+  background: rgba(99, 225, 178, 0.12);
+  border: 1px solid rgba(99, 225, 178, 0.25);
+  border-radius: 999px;
+  color: var(--mint);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 0.75rem;
+  color: var(--text);
+  line-height: 1.2;
 }
 
 h1 {
-  margin: 0 0 4px;
-  font-size: 32px;
-  line-height: 40px;
+  font-size: clamp(2rem, 5vw, 3rem);
 }
 
 h2 {
-  margin-top: 32px;
-  /* var(--amber) ir CSS mainīgais, kas glabā zelta/dzeltenīgu krāsu. */
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
   color: var(--amber);
-  font-size: 18px;
 }
 
-.muted {
+.lead,
+.panel p,
+.feature-list,
+.site-footer p {
+  margin: 0;
   color: var(--muted);
 }
 
-/* ---------- Tabulas ---------- */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(246, 193, 104, 0.1);
+  border: 1px solid rgba(246, 193, 104, 0.25);
+  color: var(--amber);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  margin-top: 1rem;
+}
 
 table {
   width: 100%;
-  border: 1px solid var(--edge);
-  border-radius: 12px;
   border-collapse: collapse;
-  background: var(--panel);
+  border: 1px solid var(--edge);
+  border-radius: 1rem;
   overflow: hidden;
+  background: rgba(11, 17, 23, 0.25);
 }
 
 th,
 td {
-  padding: 10px 14px;
+  padding: 0.9rem 1rem;
   text-align: left;
+  border-bottom: 1px solid var(--edge);
 }
 
 th {
+  font-size: 0.75rem;
   color: var(--muted);
-  font-size: 13px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-tbody tr {
-  border-top: 1px solid var(--edge);
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.02);
 }
 
-/* 1. vieta ir izcelta. */
-tbody tr:first-child {
-  /* Pirmā rinda tabulā būs izcelta, lai tā izskatītos kā līderis/izcēlums. */
-  background: var(--highlight);
+tbody tr:last-child td {
+  border-bottom: none;
 }
 
-tbody tr:first-child td:first-child,
-tbody tr:first-child .score {
+.rank {
   color: var(--amber);
+  font-weight: 800;
+}
+
+.player-link {
   font-weight: 700;
 }
 
-.score {
+.value-score {
   color: var(--mint);
-  font-weight: 700;
+  font-weight: 800;
 }
 
-/* ---------- Kartītes ---------- */
-
-.card {
-  padding: 16px 20px;
-  border: 1px solid var(--edge);
-  border-radius: 12px;
-  background: var(--panel);
+.empty-state {
+  color: var(--muted);
+  text-align: center;
 }
 
-.stats {
-  /* flex ļauj elementus novietot vienā rindā. */
-  display: flex;
-  /* gap: 12px; pievieno horizontālu atstarpi starp kartēm. */
-  gap: 12px;
-  margin: 20px 0;
+.info-stack,
+.stats-grid {
+  display: grid;
+  gap: 1.25rem;
 }
 
-.stats .card {
-  /* Šeit katrs elements kļūst arī flex konteiners. */
-  display: flex;
-  /* flex: 1; nozīmē: “ņem vienādu daļu no pieejamās platuma”. */
-  flex: 1;
-  /* flex-direction: column; liek saturu stāvēt kolonnā — no augšas uz leju. */
-  flex-direction: column;
+.info-stack {
+  margin-top: 1.5rem;
+}
+
+.stats-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 1.5rem;
+}
+
+.stat-card {
+  padding: 1.2rem 1.3rem;
 }
 
 .label {
+  display: block;
+  margin-bottom: 0.8rem;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .value {
   color: var(--mint);
-  font-size: 32px;
+  font-size: clamp(1.6rem, 4vw, 2.5rem);
   font-weight: 800;
 }
 
-/* ---------- Šaurs ekrāns ---------- */
+.text-link {
+  font-weight: 700;
+}
 
-@media (max-width: 520px) {
-  /* Šis noteikums darbojas tikai uz maziem ekrāniem. */
+.feature-list {
+  padding-left: 1.2rem;
+}
+
+.feature-list li + li {
+  margin-top: 0.55rem;
+}
+
+.site-footer {
+  padding: 0 1.25rem 2rem;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
   .site-header {
-    /* Apsver: vietā, kur bija “rinda”, tagad veidojam kolonu. */
+    padding: 0.9rem 1rem;
     flex-direction: column;
-    gap: 8px;
   }
 
-  .stats {
-    /* Uz mobilā ekrāna statistikām arī jāstājas vertikāli. */
-    flex-direction: column;
+  .site-nav {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .page-shell {
+    padding-top: 1.5rem;
+  }
+
+  .hero,
+  .panel {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
   }
 }
