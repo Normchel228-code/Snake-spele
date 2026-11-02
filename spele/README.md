@@ -19,16 +19,19 @@ Ja sistēmā nav komandas `python`, izmanto `python3`.
 
 ## Projekta struktūra
 
-```text
-api/       API un SQLite datubāze
-client/    Pygame klients un API klients
-game/      Spēles loģika
-static/    API lapu stili
-```
+- [api/main.py](api/main.py) — FastAPI serveris un HTML atskaite
+- [api/db.py](api/db.py) — SQLite datubāzes savienojums un rezultātu glabāšana
+- [client/main.py](client/main.py) — spēles klients un ievades apstrāde
+- [game/logic.py](game/logic.py) — spēles loģika un noteikumi
+- [static/style.css](static/style.css) — API mājaslapu stils
+- [local-demo/index.html](local-demo/index.html) — lokālās demonstrācijas līderu tabula
+- [local-demo/rules.html](local-demo/rules.html) — lokālās demonstrācijas noteikumi
+- [local-demo/player.html](local-demo/player.html) — lokālās demonstrācijas spēlētāja profils
 
 ## Papildu materiāli
 
-Mapē `../Exercise/` glabājas tikai uzdevumu nosacījumi. Tā ir personīgs papildinājums ērtībai un nav daļa no šī projekta struktūras.
+- [Dizains.docx](Dizains.docx) — dizaina dokuments
+- [requirements.txt](requirements.txt) — nepieciešamās Python bibliotēkas
 
 ## Spēles palaišana
 
