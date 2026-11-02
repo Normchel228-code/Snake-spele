@@ -7,10 +7,13 @@
 Nepieciešams Python 3.10 vai jaunāks.
 
 ```bash
+cd ~/Snake-spele/spele
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
+
+Ja sistēmā nav komandas `python`, izmanto `python3`.
 
 `requirements.txt` ietver spēles un API atkarības, kā arī izstrādes rīkus (`pylint`, `pytest`).
 
@@ -32,7 +35,11 @@ Mapē `../Exercise/` glabājas tikai uzdevumu nosacījumi. Tā ir personīgs pap
 Palaižot no projekta saknes ar ieslēgtu virtuālo vidi:
 
 ```bash
+cd ~/Snake-spele/spele
+source .venv/bin/activate
 python -m client.main
+# vai, ja python komanda nav pieejama:
+# python3 -m client.main
 ```
 
 Sākuma izvēlnē ieraksti spēlētāja vārdu (līdz 12 burtiem vai cipariem, `_` un `-`) un nospied `Enter`.

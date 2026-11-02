@@ -37,6 +37,13 @@ LEVELS = (
     Level(apples=14, step_time=0.095, zone_interval=5.0, dark_drain=2.5),
 )
 
+DIFFICULTY_MULTIPLIERS = {
+    "easy": 0.5,
+    "normal": 1.0,
+    "medium": 1.0,
+    "hard": 1.5,
+}
+
 
 def add(a: Cell, b: Cell) -> Cell:
     """Saskaita divus pārus."""
@@ -72,11 +79,14 @@ class Effect:
 class Game:
     """Glabā spēles stāvokli."""
 
-    def __init__(self, width: int = 34, height: int = 20) -> None:
+    def __init__(self, width: int = 34, height: int = 20,
+                 difficulty: str = "normal") -> None:
         if width < 5 or height < 5:
             raise ValueError("Laukumam jābūt vismaz 5 x 5 šūnas lielam.")
         self.width = width
         self.height = height
+        self.difficulty = "normal"
+        self.set_difficulty(difficulty)
         self.reset()
 
     def reset(self) -> None:
@@ -115,9 +125,33 @@ class Game:
                    if self.apples_eaten >= level.apples)
 
     @property
+    def difficulty_multiplier(self) -> float:
+        """Grūtības ātruma koeficients: >1 = ātrāk, <1 = lēnāk."""
+        key = self.difficulty.lower()
+        if key == "medium":
+            key = "normal"
+        return DIFFICULTY_MULTIPLIERS.get(key, 1.0)
+
+    def set_difficulty(self, difficulty: str) -> None:
+        """Maina spēles grūtību, pieņemot easy/normal/hard."""
+        normalized = (difficulty or "normal").lower()
+        if normalized == "medium":
+            normalized = "normal"
+        if normalized not in DIFFICULTY_MULTIPLIERS:
+            normalized = "normal"
+        self.difficulty = normalized
+
+    @property
     def config(self) -> Level:
-        """Pašreizējā līmeņa iestatījumi."""
-        return LEVELS[self.level - 1]
+        """Pašreizējā līmeņa iestatījumi ar grūtības ātruma koeficientu."""
+        base = LEVELS[self.level - 1]
+        speed = self.difficulty_multiplier
+        return Level(
+            apples=base.apples,
+            step_time=base.step_time / speed,
+            zone_interval=base.zone_interval / speed,
+            dark_drain=base.dark_drain * speed,
+        )
 
     def apples_to_next(self) -> int | None:
         """Cik ābolu līdz nākamajam līmenim (None, ja līmenis pēdējais)."""

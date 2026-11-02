@@ -412,33 +412,48 @@ def draw_light(screen: pygame.Surface, game: Game,
 
 # ---------- Izvēlne, pauze, beigu ekrāns ----------
 
-def draw_menu(screen: pygame.Surface, name: str,
+def draw_menu(screen: pygame.Surface, name: str, difficulty: str | None,
               overlay: pygame.Surface) -> None:
-    """Galvenā izvēlne ar vārda ievades lauku."""
+    """Galvenā izvēlne ar atsevišķu grūtības izvēli un vārda ievadi."""
     overlay.fill((8, 12, 18, 215))
     screen.blit(overlay, BOARD)
 
-    card = pygame.Rect(0, 0, 420, 235)
+    card = pygame.Rect(0, 0, 420, 255)
     card.center = BOARD.center
     pygame.draw.rect(screen, PANEL, card, border_radius=16)
     pygame.draw.rect(screen, PANEL_EDGE, card, 1, border_radius=16)
     draw_text(screen, "SNAKE  LIGHT / DARK", 13, AMBER,
-              center=(card.centerx, card.y + 32))
+              center=(card.centerx, card.y + 28))
+
+    difficulty_label = "SELECTED: EASY" if difficulty == "easy" else (
+        "SELECTED: NORMAL" if difficulty == "normal" else (
+            "SELECTED: HARD" if difficulty == "hard" else "SELECT DIFFICULTY"
+        )
+    )
+    draw_text(screen, difficulty_label, 11, MUTED,
+              center=(card.centerx, card.y + 54))
+    draw_text(screen, "1 EASY   2 NORMAL   3 HARD", 12, TEXT,
+              center=(card.centerx, card.y + 78))
     draw_text(screen, "ENTER YOUR NAME", 18, TEXT,
-              center=(card.centerx, card.y + 68))
+              center=(card.centerx, card.y + 116))
 
     field = pygame.Rect(0, 0, 300, 44)
-    field.center = (card.centerx, card.y + 125)
+    field.center = (card.centerx, card.y + 165)
     pygame.draw.rect(screen, FIELD, field, border_radius=8)
     pygame.draw.rect(screen, MINT_DARK, field, 1, border_radius=8)
     blink = pygame.time.get_ticks() // 500 % 2 == 0
     draw_text(screen, name + ("_" if blink else " "), 18, MINT,
               midleft=(field.x + 14, field.centery))
 
-    hint = "ENTER  START" if name else "TYPE A NAME TO START"
-    draw_text(screen, hint, 10, MUTED, center=(card.centerx, card.y + 182))
+    if difficulty is None:
+        hint = "SELECT DIFFICULTY FIRST"
+    elif name:
+        hint = "ENTER  START"
+    else:
+        hint = "TYPE A NAME TO START"
+    draw_text(screen, hint, 10, MUTED, center=(card.centerx, card.y + 212))
     draw_text(screen, "ESC  QUIT", 10, MUTED,
-              center=(card.centerx, card.y + 205))
+              center=(card.centerx, card.y + 233))
 
 
 def draw_pause(screen: pygame.Surface, game: Game,
@@ -481,6 +496,11 @@ def draw_game_over(screen: pygame.Surface, game: Game,
 
 FPS = 60
 MAX_NAME = 12  # Vārda garums (servera validācijai jābūt tādai pašai).
+DIFFICULTY_KEYS = {
+    pygame.K_1: "easy",
+    pygame.K_2: "normal",
+    pygame.K_3: "hard",
+}
 
 KEYS = {  # Taustiņi -> virzieni.
     pygame.K_UP: UP, pygame.K_w: UP,
@@ -515,9 +535,11 @@ class App:
         self.background = make_background()
         self.overlay = pygame.Surface(BOARD.size, pygame.SRCALPHA)
 
-        self.game = Game(GRID_W, GRID_H)
+        self.game = Game(GRID_W, GRID_H, difficulty="normal")
         self.uploader = api_client.ScoreUploader()
         self.name = ""  # Spēlētāja vārds.
+        self.difficulty: str | None = None
+        self.game.set_difficulty(self.difficulty or "normal")
         self.in_menu = True
         self.running = True
         self.previous: list[Cell] = list(self.game.snake)  # Iepriekšējais.
@@ -528,6 +550,9 @@ class App:
 
     def new_round(self) -> None:
         """Sāk jaunu spēli un aizmirst veco servera statusu."""
+        if self.difficulty is None:
+            self.difficulty = "normal"
+        self.game.set_difficulty(self.difficulty)
         self.game.reset()
         self.previous = list(self.game.snake)
         self.corners.clear()
@@ -545,11 +570,16 @@ class App:
                 self.handle_game_key(event)
 
     def handle_menu_key(self, event: pygame.event.Event) -> None:
-        """Taustiņi izvēlnē: vārda ievade, Enter, Esc."""
+        """Taustiņi izvēlnē: grūtības izvēle, vārda ievade, Enter, Esc."""
+        if event.key in DIFFICULTY_KEYS:
+            self.difficulty = DIFFICULTY_KEYS[event.key]
+            if hasattr(self, "game"):
+                self.game.set_difficulty(self.difficulty)
+            return
         if event.key == pygame.K_ESCAPE:
             self.running = False
         elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
-            if self.name:
+            if self.name and self.difficulty is not None:
                 self.in_menu = False
                 self.new_round()
         else:
@@ -597,18 +627,21 @@ class App:
             return
         game = self.game
         game.update(dt)
-        # Čūska pārvietojas reizi STEP_TIME; starp soļiem zīmējam pāreju.
         if game.is_finished():
             self.step_timer = 0.0
             if not self.uploader.started:
                 self.uploader.start(self.name, game.score)
-        elif not game.paused:  # Pauzē taimeris stāv uz vietas.
-            self.step_timer += dt
-            step_time = game.config.step_time
-            if self.step_timer >= step_time:
-                self.step_timer -= step_time
-                self.previous = list(game.snake)
-                game.step()
+            return
+        if game.paused:
+            return
+
+        self.step_timer += dt
+        while self.step_timer >= max(0.01, game.config.step_time):
+            self.step_timer -= max(0.01, game.config.step_time)
+            self.previous = list(game.snake)
+            game.step()
+            if game.is_finished():
+                break
 
     def render(self) -> None:
         """Uzzīmē visu kadru."""
@@ -616,10 +649,10 @@ class App:
         screen.blit(self.background, (0, 0))
         draw_hud(screen, game)
         if self.in_menu:
-            draw_menu(screen, self.name, overlay)
+            draw_menu(screen, self.name, self.difficulty, overlay)
         else:
             finished = game.is_finished()
-            step_time = game.config.step_time
+            step_time = max(0.01, game.config.step_time)
             progress = 1.0 if finished else self.step_timer / step_time
             draw_dark_zones(screen, game)
             draw_apple(screen, game.apple)
