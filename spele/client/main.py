@@ -23,7 +23,7 @@ WINDOW_W, WINDOW_H = 1000, 720
 BOARD_X, BOARD_Y = (WINDOW_W - BOARD_W) // 2, 166
 BOARD = pygame.Rect(BOARD_X, BOARD_Y, BOARD_W, BOARD_H)
 
-# Krāsas: RGB, komentārā — tas pats hex, kas api/static/style.css.
+# Krāsas: RGB, komentārā — tas pats hex, kas static/style.css.
 BG = (12, 17, 23)  # #0c1117
 PANEL = (20, 27, 36)  # #141b24
 PANEL_EDGE = (39, 49, 62)  # #27313e

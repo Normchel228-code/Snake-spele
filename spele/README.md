@@ -1,8 +1,26 @@
 # Snake: Light & Dark
 
-Čūskas spēle ar mainīgām tumšajām zonām, līmeņiem un rezultātu nosūtīšanu uz API.
+Čūskas spēle ar mainīgām tumšajām zonām, līmeņiem un rezultātu nosūtīšanu uz savu API serveri.
 
-## Prasības un instalēšana
+## Projekta struktūra
+
+```text
+spele/
+├── game/               # spēles noteikumi, BEZ pygame
+├── client/             # pygame: ievade, zīmēšana, api_client.py
+│   └── main.py
+├── api/                # FastAPI serveris
+│   ├── main.py
+│   ├── db.py
+│   ├── templates/      # Jinja HTML veidnes
+│   └── static/         # CSS
+├── Dizains.docx        # spēles apraksts (Word)
+├── README.md
+├── requirements.txt
+└── .gitignore          # .venv/, __pycache__/, *.db
+```
+
+## Instalēšana
 
 Nepieciešams Python 3.10 vai jaunāks.
 
@@ -13,39 +31,41 @@ source .venv/bin/activate
 python -m pip install -r requirements.txt
 ```
 
+Visas komandas zemāk jāpalaiž **no mapes `spele/`** ar ieslēgtu virtuālo vidi (`source .venv/bin/activate`).
 Ja sistēmā nav komandas `python`, izmanto `python3`.
 
-`requirements.txt` ietver spēles un API atkarības, kā arī izstrādes rīkus (`pylint`, `pytest`).
-
-## Projekta struktūra
-
-- [api/main.py](api/main.py) — FastAPI serveris un HTML atskaite
-- [api/db.py](api/db.py) — SQLite datubāzes savienojums un rezultātu glabāšana
-- [client/main.py](client/main.py) — spēles klients un ievades apstrāde
-- [game/logic.py](game/logic.py) — spēles loģika un noteikumi
-- [static/style.css](static/style.css) — API mājaslapu stils
-- [local-demo/index.html](local-demo/index.html) — lokālās demonstrācijas līderu tabula
-- [local-demo/rules.html](local-demo/rules.html) — lokālās demonstrācijas noteikumi
-- [local-demo/player.html](local-demo/player.html) — lokālās demonstrācijas spēlētāja profils
-
-## Papildu materiāli
-
-- [Dizains.docx](Dizains.docx) — dizaina dokuments
-- [requirements.txt](requirements.txt) — nepieciešamās Python bibliotēkas
-
-## Spēles palaišana
-
-Palaižot no projekta saknes ar ieslēgtu virtuālo vidi:
+## 1. Servera (API + mājaslapa) palaišana
 
 ```bash
-cd ~/Snake-spele/spele
-source .venv/bin/activate
+python -m api.main
+```
+
+Terminālis pēc tam "nepabeidzas" — tas ir normāli, serveris strādā, kamēr terminālis ir atvērts. Apturēt: `Ctrl+C`.
+Kad terminālī parādījies `Uvicorn running on http://127.0.0.1:8000`, atver:
+
+- [http://127.0.0.1:8000/](http://127.0.0.1:8000/) — līderu tabula
+- [http://127.0.0.1:8000/rules](http://127.0.0.1:8000/rules) — spēles noteikumi
+- [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs) — API dokumentācija (Swagger)
+- `http://127.0.0.1:8000/players/<vards>` — spēlētāja profils (parādās pēc pirmā saglabātā rezultāta)
+
+Ja vajag automātisku pārlādi izstrādes laikā:
+
+```bash
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload --reload-dir api
+```
+
+Lapas darbojas tikai caur serveri. Failus `api/templates/*.html` nevar atvērt ar dubultklikšķi — tās ir Jinja veidnes, un pārlūks rādīs tikai tukšu karkasu.
+
+## 2. Spēles palaišana
+
+Citā terminālī (serveris var darboties paralēli):
+
+```bash
 python -m client.main
-# vai, ja python komanda nav pieejama:
-# python3 -m client.main
 ```
 
 Sākuma izvēlnē ieraksti spēlētāja vārdu (līdz 12 burtiem vai cipariem, `_` un `-`) un nospied `Enter`.
+Spēle strādā arī bez servera, bet tad rezultāts netiek saglabāts.
 
 ## Vadība
 
@@ -66,21 +86,19 @@ Sākuma izvēlnē ieraksti spēlētāja vārdu (līdz 12 burtiem vai cipariem, `
 
 ## Rezultātu API
 
-Klients spēli var turpināt arī bez servera, taču bez pieejama API rezultāts netiek saglabāts. API adresi var mainīt ar `SNAKE_API_URL` (noklusējums ir [http://127.0.0.1:8000](http://127.0.0.1:8000)), bet datubāzes failu — ar `SNAKE_DB`.
+- `POST /scores` — saglabā rezultātu (`name`, `score`)
+- `GET /scores/top` — top-10
+- `GET /players/{name}/stats` — spēlētāja statistika
 
-Serveris tiek palaists no projekta saknes:
+API adresi klientā var nomainīt ar vides mainīgo `SNAKE_API_URL` (noklusējums `http://127.0.0.1:8000`), datubāzes failu — ar `SNAKE_DB` (noklusējums `api/scores.db`).
 
-```bash
-uvicorn api.main:app --reload
-```
+## Problēmas
 
-Pārbaude pārlūkā: [http://localhost:8000/docs](http://localhost:8000/docs).
+- `ERR_CONNECTION_REFUSED` — serveris nav palaists vai ir apstājies; pārbaudi terminālī, vai `python -m api.main` joprojām darbojas.
+- Lapa ielādējas bezgalīgi — pārlūkā izslēdz proxy lokālajām adresēm (`127.0.0.1`, `localhost`) vai pamēģini citu pārlūku.
+- Ports 8000 aizņemts — pārbaudi ar `ss -ltnp | grep 8000` un aptur veco procesu.
+- `ModuleNotFoundError: api` — komanda palaista nevis no `spele/`, vai nav `-m` (jābūt `python -m api.main`, nevis `python api/main.py`).
 
-Ja HTML lapas tiek pārbaudītas lokāli, tās jāatver tieši pārlūkā, piemēram:
+## Papildu materiāli
 
-- [http://127.0.0.1:8008/rules.html](http://127.0.0.1:8008/rules.html) — spēles noteikumi
-- [http://127.0.0.1:8008/index.html](http://127.0.0.1:8008/index.html) — līderu tabula
-- [http://127.0.0.1:8008/player.html](http://127.0.0.1:8008/player.html) — spēlētāja profils
-
-Tas ir piemērots testiem un lokālai validācijai, kad lapas tiek palaistas kā statiskās HTML failu versijas.
-
+Mapē `../Exercise/` glabājas tikai uzdevumu nosacījumi. Tā ir personīgs papildinājums ērtībai un nav daļa no šī projekta struktūras.

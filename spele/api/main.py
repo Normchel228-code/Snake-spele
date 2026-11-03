@@ -22,10 +22,13 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
     yield # apstājas šeit: serveris strādā; pēc izslēgšanas kods turpinās pēc yield (šeit nav nekā)
 
 
-BASE_DIR = Path(__file__).resolve().parents[1]
+API_DIR = Path(__file__).resolve().parent  # mape api/ (te atrodas templates/ un static/)
+STATIC_DIR = API_DIR / "static"
+TEMPLATES_DIR = API_DIR / "templates"
+
 app = FastAPI(title="Snake: Light & Dark API", lifespan=lifespan)
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
-templates = Jinja2Templates(directory=str(BASE_DIR / "api" / "templates"))
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
 
 
 class ScoreIn(BaseModel):
@@ -116,3 +119,9 @@ def rules_page(request: Request):
         "rules.html",
         {"title": "Game rules"},
     )
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("api.main:app", host="127.0.0.1", port=8000)
