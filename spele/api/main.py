@@ -23,8 +23,14 @@ async def lifespan(_app: FastAPI) -> AsyncGenerator[None, None]:
 
 
 BASE_DIR = Path(__file__).resolve().parents[1]
+STATIC_DIR = BASE_DIR / "static"
+if not STATIC_DIR.exists():
+    fallback_dir = BASE_DIR / "local-demo"
+    STATIC_DIR = fallback_dir if fallback_dir.exists() else STATIC_DIR
+    STATIC_DIR.mkdir(parents=True, exist_ok=True)
+
 app = FastAPI(title="Snake: Light & Dark API", lifespan=lifespan)
-app.mount("/static", StaticFiles(directory=str(BASE_DIR / "static")), name="static")
+app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "api" / "templates"))
 
 
@@ -116,3 +122,9 @@ def rules_page(request: Request):
         "rules.html",
         {"title": "Game rules"},
     )
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    uvicorn.run("api.main:app", host="127.0.0.1", port=8000, reload=True)

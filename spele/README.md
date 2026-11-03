@@ -44,6 +44,26 @@ python -m client.main
 
 Sākuma izvēlnē ieraksti spēlētāja vārdu (līdz 12 burtiem vai cipariem, `_` un `-`) un nospied `Enter`.
 
+### Web servera palaišana
+
+```bash
+cd ~/Snake-spele/spele
+source .venv/bin/activate
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Pēc palaišanas atver šos URL:
+
+- `http://127.0.0.1:8000/`
+- `http://127.0.0.1:8000/rules`
+- `http://127.0.0.1:8000/docs`
+
+Ja vēlies tikai lokāli apskatīt statisko HTML demo bez servera, atver failu:
+
+- `~/Snake-spele/spele/local-demo/index.html`
+
+Šī versija parāda pilnu lokālo izkārtojumu bez Jinja renderēšanas.
+
 ## Vadība
 
 - Bultiņas vai `WASD` — kustība
@@ -68,14 +88,18 @@ Klients spēli var turpināt arī bez servera, taču bez pieejama API rezultāts
 Serveris tiek palaists no projekta saknes:
 
 ```bash
-uvicorn api.main:app --reload
+cd ~/Snake-spele/spele
+source .venv/bin/activate
+python -m uvicorn api.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-Pārbaude pārlūkā: `http://localhost:8000/docs`.
+Pārbaude pārlūkā: `http://127.0.0.1:8000/docs`.
 
 HTML mājaslapas tiek serverētas arī tieši no API:
 
-- `http://localhost:8000/` — līderu tabula
-- `http://localhost:8000/rules` — spēles noteikumi
-- `http://localhost:8000/players/<vards>` — spēlētāja profils
+- `http://127.0.0.1:8000/` — līderu tabula
+- `http://127.0.0.1:8000/rules` — spēles noteikumi
+- `http://127.0.0.1:8000/players/<vards>` — spēlētāja profils
+
+Ja atverat failu lokāli (`local-demo/index.html`), tas darbojas kā statiska demo versija un neizsauc FastAPI serveri.
 
