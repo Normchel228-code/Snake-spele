@@ -6,7 +6,22 @@ import os
 # Bez tā servera saziņa bloķētu lietotāja interfeisu un spēli būtu "saldēta".
 import threading
 
-import requests
+# `requests` ir obligāts API klienta darbināšanai, bet reizēm vide ir minimāla
+# un bibliotēka nav instalēta. Tāpēc ielādējam to droši ar fallback, lai
+# programma nedarbojas ar sintakses kļūdu un var turpināt darboties ar
+# vienkāršu kļūdas simulāciju.
+try:
+    import requests  # type: ignore[import-not-found]
+except ModuleNotFoundError:  # pragma: no cover - fallback for minimal environments
+    class _RequestsFallback:
+        class RequestException(Exception):
+            """Simulē `requests` kļūdu, kad bibliotēka nav instalēta."""
+
+        @staticmethod
+        def post(*args, **kwargs):
+            raise _RequestsFallback.RequestException("requests package is not installed")
+
+    requests = _RequestsFallback()
 
 # `os.environ.get()` nolasa vides mainīgo `SNAKE_API_URL`.
 # Ja tas nav iestatīts, tiek izmantots lokālais defaults:
