@@ -5,7 +5,7 @@ import math
 from functools import cache
 from typing import Any
 
-import pygame
+import pygame  # type: ignore[import-not-found]
 
 from client import api_client
 from game.logic import DOWN, LEFT, RIGHT, UP, Cell, Game

@@ -4,10 +4,10 @@ from collections.abc import AsyncGenerator  # tips anotācijai: lifespan ir asin
 from contextlib import asynccontextmanager  # dekorators: pārveido lifespan par objektu `async with` (FastAPI izsauc to startā un beigās)
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException, Request  # fast api pēc nosacījumiem; HTTPException: kļūda ar HTTP kodu (piem., 404)
-from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
-from pydantic import BaseModel, ConfigDict, Field  # BaseModel: datu modelis; ConfigDict: modeļa iestatījumi; Field: lauku ierobežojumi
+from fastapi import FastAPI, HTTPException, Request  # pyright: ignore[reportMissingImports]  # fast api pēc nosacījumiem; HTTPException: kļūda ar HTTP kodu (piem., 404)
+from fastapi.staticfiles import StaticFiles  # pyright: ignore[reportMissingImports]
+from fastapi.templating import Jinja2Templates  # pyright: ignore[reportMissingImports]
+from pydantic import BaseModel, ConfigDict, Field  # pyright: ignore[reportMissingImports]  # BaseModel: datu modelis; ConfigDict: modeļa iestatījumi; Field: lauku ierobežojumi
 from api import db
 
 MAX_NAME_LENGTH = 12  # Jāsakrīt ar MAX_NAME klientā.
@@ -122,6 +122,6 @@ def rules_page(request: Request):
 
 
 if __name__ == "__main__":
-    import uvicorn
+    import uvicorn  # pyright: ignore[reportMissingImports]
 
     uvicorn.run("api.main:app", host="127.0.0.1", port=8000)

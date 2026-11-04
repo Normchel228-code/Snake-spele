@@ -1,10 +1,18 @@
 """Klients: sūta rezultātus serverim (requests), nesasaldējot spēli."""
 
 import os
+# `threading` ļauj palaist fonā darbu atsevišķā pavedienā,
+# tāpēc spēles galvenais cikls neapstājas, kamēr notiek API pieprasījums.
+# Bez tā servera saziņa bloķētu lietotāja interfeisu un spēli būtu "saldēta".
 import threading
 
 import requests
 
+# `os.environ.get()` nolasa vides mainīgo `SNAKE_API_URL`.
+# Ja tas nav iestatīts, tiek izmantots lokālais defaults:
+# `http://127.0.0.1:8000`.
+# Šādi konfigurācija ir elastīga: to var mainīt operētājsistēmā vai deploy vidē,
+# bez koda rediģēšanas.
 BASE_URL = os.environ.get("SNAKE_API_URL", "http://127.0.0.1:8000")
 TIMEOUT = 2.0  # Sekundes, cik ilgi gaidām serveri.
 
@@ -55,6 +63,11 @@ class ScoreUploader:
         self.started = True
         self.failed = False
         self.status = "SAVING SCORE..."
+        # `daemon=True` nozīmē, ka šis pavediens ir "fona" process.
+        # Tas automātiski tiek pārtraukts, kad programma beidz darboties,
+        # negaidot, kamēr tas pabeidz pēdējo API pieprasījumu.
+        # Šeit tas ir nepieciešams, lai spēle neaizķertos uz izslēgšanas brīdi,
+        # ja rezultāta sūtīšana vēl nav pabeigta, bet lietotājs jau ir aizvēris logu.
         thread = threading.Thread(
             target=self._send, args=(self._token, name, score), daemon=True
         )
