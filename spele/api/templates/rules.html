@@ -1,6 +1,10 @@
 {% extends 'base.html' %}
 
 {% block content %}
+  <!--
+    "hero" sadaļa ir īsa spēles ievads. Šeit ir svarīgi, lai students saprastu, par ko ir
+    visa lapa, pirms viņš iepazīstas ar detalizētiem noteikumiem un kontrolēm.
+  -->
   <section class="hero panel" aria-labelledby="rules-title">
     <div class="eyebrow">Spēles noteikumi</div>
     <h1 id="rules-title">How to play</h1>
@@ -10,6 +14,11 @@
     </p>
   </section>
 
+  <!--
+    "info-stack" ir vienkāršs vietnes saturs, kur katrs "article" ir atsevišķa joma:
+    vadība, galvenie noteikumi un progresija. Tādējādi HTML struktūra atspoguļo
+    saturu, nevis tikai vizuālo izkārtojumu.
+  -->
   <section class="info-stack" aria-label="Spēles vadība un noteikumi">
     <article class="panel">
       <div class="section-header">

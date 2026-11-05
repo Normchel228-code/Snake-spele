@@ -1,6 +1,11 @@
 {% extends 'base.html' %}
 
 {% block content %}
+  <!--
+    "hero" bloks ir galvenais ievads: tā ir pirmā lapa, kas studentam parāda, ko viņš
+    redzēs. "eyebrow" ir maza virsraksta josla virs h1, bet aria-labelledby palīdz
+    ekrāna lasītājiem zināt, ka šis ir galvenais nosaukums.
+  -->
   <section class="hero panel" aria-labelledby="leaderboard-title">
     <div class="eyebrow">Spēles rezultāti</div>
     <h1 id="leaderboard-title">Līderu tabula</h1>
@@ -10,6 +15,11 @@
     </p>
   </section>
 
+  <!--
+    Tabula ir raksturīgs "datu ekrāns": šeit tiek parādīti rezultāti, kārtoti no labākā
+    uz sliktāko. Atrasts elements "thead" un "tbody" uztur html tabulas struktūru,
+    kas ir svarīga gan CSS, gan pieejamībai.
+  -->
   <section class="panel" aria-labelledby="scores-table-title">
     <div class="section-header">
       <h2 id="scores-table-title">Labākie rezultāti</h2>
@@ -35,6 +45,10 @@
               <td>{{ score.created_at[:16] }}</td>
             </tr>
           {% else %}
+            <!--
+              Jinja "else" bloks izpildās, ja tabulai nav neviena rekorda.
+              Tas ir pareizs veids, kā parādīt tukšas ziņas, nevis tikai baltu lapu.
+            -->
             <tr>
               <td colspan="4" class="empty-state">Vēl nav saglabātu rezultātu. Sāc spēli un esi pirmais.</td>
             </tr>
@@ -44,6 +58,10 @@
     </div>
   </section>
 
+  <!--
+    Šī sadaļa ir “par spēli”, nevis “par rezultātiem”. Tāpēc tā ir atsevišķa sekcija.
+    Šeit varētu būt teksts, kas palīdz saprast spēles kontekstu vai mērķi.
+  -->
   <section class="panel" aria-labelledby="game-about-title">
     <div class="section-header">
       <h2 id="game-about-title">Par spēli</h2>

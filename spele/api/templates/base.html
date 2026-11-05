@@ -15,8 +15,16 @@
     <link rel="stylesheet" href="{{ url_for('static', path='style.css') }}" />
   </head>
   <body>
+    <!--
+      "skip-link" ir slepena saite, kas ļauj tastatūras lietotājam
+      uzreiz pāriet uz galveno saturu, nevis ritināt visu lapu.
+    -->
     <a class="skip-link" href="#main-content">Pāriet uz saturu</a>
 
+    <!--
+      Visas lapas kopīgā galvene: logo un navigācija. Šeit ir "site-header",
+      kas paliek vienāda visās lapās, bet saturs tiek mainīts ar Jinja blokiem.
+    -->
     <header class="site-header" aria-label="Galvenā navigācija">
       <a href="{{ url_for('home_page') }}" class="brand" aria-label="Atgriezties uz līderu tabulu">
         <span class="brand-mark">SNAKE</span>
@@ -29,10 +37,18 @@
       </nav>
     </header>
 
+    <!--
+      "main" ir galvenais saturs. Šeit tiek ielādēts katras lapas unikālais saturs,
+      ko nosaka "{% block content %}" no konkrētā HTML faila.
+    -->
     <main id="main-content" class="page-shell">
       {% block content %}{% endblock %}
     </main>
 
+    <!--
+      Footer ir zemākā daļa, kurā parasti tiek rādīts autora vai projekta apraksts.
+      Šeit ir vienkāršs teksts, kas neietekmē galveno funkcionalitāti.
+    -->
     <footer class="site-footer">
       <p>Snake: Light & Dark · FastAPI + Jinja2</p>
     </footer>

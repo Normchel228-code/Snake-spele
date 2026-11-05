@@ -1,12 +1,20 @@
 {% extends 'base.html' %}
 
 {% block content %}
+  <!--
+    Šis ir profils. Lapa nav par visu spēli, bet par konkrētu spēlētāju,
+    tāpēc nosaukums un ievada teksts ir jāliek atsevišķā hero blokā.
+  -->
   <section class="hero panel" aria-labelledby="profile-title">
     <div class="eyebrow">Spēlētāja profils</div>
     <h1 id="profile-title">{{ player.name }}</h1>
     <p class="lead">Statistika un spēles vēsture par šo spēlētāju.</p>
   </section>
 
+  <!--
+    Statistikas kartes ir īsi skaitļu bloki. Katra "article" ir atsevišķs elements,
+    kas satur vienu rādītāju: spēles skaitu, labāko rezultātu un vidējo vērtību.
+  -->
   <section class="stats-grid" aria-label="Spēlētāja statistika">
     <article class="stat-card panel">
       <span class="label">Spēles</span>
@@ -22,6 +30,10 @@
     </article>
   </section>
 
+  <!--
+    "dl" / "dt" / "dd" ir definīciju saraksts — šeit tiek izmantots, lai uzrādītu
+    vienu vai vairākus "nosaukums: vērtība" datus, piemēram, pēdējo spēli.
+  -->
   <section class="panel" aria-labelledby="profile-details-title">
     <div class="section-header">
       <h2 id="profile-details-title">Detalizēta informācija</h2>
